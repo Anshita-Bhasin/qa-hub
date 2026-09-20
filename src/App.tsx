@@ -1,20 +1,20 @@
 import React, { useState } from 'react';
 import { ScreenId, DetectedIssue, ExecutionRun, IssueStatus } from './types';
-import { INITIAL_ISSUES, INITIAL_RUNS, STITCH_ASSETS } from './data/initialData';
-import { Navigation } from './components/Navigation';
+import { getJSON, postJSON, patchJSON } from './utils/api';
+import { Sidebar } from './components/Sidebar';
 import { OverviewScreen } from './components/OverviewScreen';
 import { ScraperScreen } from './components/ScraperScreen';
 import { FunctionalTestsScreen } from './components/FunctionalTestsScreen';
 import { IssuesScreen } from './components/IssuesScreen';
 import { ReviewPinsScreen } from './components/ReviewPinsScreen';
+import { TrendsScreen } from './components/TrendsScreen';
 import { JiraModal } from './components/JiraModal';
 import { TraceModal } from './components/TraceModal';
-import { DesignReferenceModal } from './components/DesignReferenceModal';
 
 export function App() {
   const [currentScreen, setCurrentScreen] = useState<ScreenId>('overview');
-  const [issues, setIssues] = useState<DetectedIssue[]>(INITIAL_ISSUES);
-  const [runs, setRuns] = useState<ExecutionRun[]>(INITIAL_RUNS);
+  const [issues, setIssues] = useState<DetectedIssue[]>([]);
+  const [runs, setRuns] = useState<ExecutionRun[]>([]);
 
   // Modals state
   const [selectedJiraIssue, setSelectedJiraIssue] = useState<DetectedIssue | null>(null);
@@ -31,7 +31,6 @@ export function App() {
     suiteName: 'Checkout Step Two - Problem User Price Glitch',
     stepName: 'Step 4: Assert subtotal matches item price'
   });
-  const [isDesignRefOpen, setIsDesignRefOpen] = useState(false);
   const [isRunningSwarm, setIsRunningSwarm] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
 
@@ -42,18 +41,30 @@ export function App() {
     }, 3500);
   };
 
+  React.useEffect(() => {
+    getJSON<DetectedIssue[]>('/api/issues').then(setIssues).catch(err => showToast(`Failed to load issues: ${err.message}`));
+    getJSON<ExecutionRun[]>('/api/runs').then(setRuns).catch(err => showToast(`Failed to load runs: ${err.message}`));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Status updates
   const handleUpdateIssueStatus = (id: string, newStatus: IssueStatus) => {
-    setIssues(prev => prev.map(issue => 
-      issue.id === id ? { ...issue, status: newStatus, lastSeen: 'Just now' } : issue
-    ));
-    showToast(`Issue status updated to ${newStatus.toUpperCase()}`);
+    patchJSON<DetectedIssue>(`/api/issues/${id}`, { status: newStatus, lastSeen: 'Just now' })
+      .then(updated => {
+        setIssues(prev => prev.map(issue => (issue.id === id ? updated : issue)));
+        showToast(`Issue status updated to ${newStatus.toUpperCase()}`);
+      })
+      .catch(err => showToast(`Failed to update issue: ${err.message}`));
   };
 
   // Add newly scraped anomalies to issues list
   const handleAddScrapedIssues = (newIssues: DetectedIssue[]) => {
-    setIssues(prev => [...newIssues, ...prev]);
-    showToast(`Added ${newIssues.length} scraped anomalies to Issues Repository!`);
+    postJSON<DetectedIssue[]>('/api/issues', newIssues)
+      .then(created => {
+        setIssues(prev => [...created, ...prev]);
+        showToast(`Added ${created.length} scraped anomalies to Issues Repository!`);
+      })
+      .catch(err => showToast(`Failed to add issues: ${err.message}`));
   };
 
   // Open Trace Modal with custom parameters
@@ -63,7 +74,7 @@ export function App() {
     codeExcerpt = `39:  await page.waitForSelector('.summary_subtotal_label');
 40:  const subtotal = await page.locator('.summary_subtotal_label').innerText();
 41:  console.log('Telemetry capture subtotal: ' + subtotal);
-42:> expect(subtotal).toContain('$49.99'); 
+42:> expect(subtotal).toContain('$49.99');
      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
      Error: Value mismatch.
      - Expected: "$49.99"
@@ -97,97 +108,88 @@ export function App() {
         duration: '1.42s',
         suiteName: 'Full Swarm Verification'
       };
-      setRuns(prev => [newRun, ...prev.slice(0, 5)]);
-      showToast('Swarm Scan Complete! 24 total issues synchronized.');
+      postJSON<ExecutionRun>('/api/runs', newRun)
+        .then(created => {
+          setRuns(prev => [created, ...prev.slice(0, 5)]);
+          showToast('Swarm Scan Complete! 24 total issues synchronized.');
+        })
+        .catch(err => showToast(`Failed to record run: ${err.message}`));
     }, 2000);
   };
 
   const openIssuesCount = issues.filter(i => i.status === 'open').length;
 
   return (
-    <div className="min-h-screen bg-[#0F172A] text-slate-100 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen bg-white text-slate-900 flex font-sans selection:bg-[#FFD21E] selection:text-slate-900">
       {/* Toast notification */}
       {notification && (
-        <div className="fixed bottom-5 right-5 z-50 px-4 py-2.5 rounded-lg bg-blue-600 text-white font-medium text-xs shadow-2xl border border-blue-400/40 flex items-center space-x-2 animate-in slide-in-from-bottom-5">
-          <span className="w-2 h-2 rounded-full bg-white animate-ping"></span>
+        <div className="fixed bottom-5 right-5 z-50 px-4 py-2.5 rounded-lg bg-slate-900 text-white font-medium text-sm shadow-lg flex items-center space-x-2 animate-in slide-in-from-bottom-5">
+          <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
           <span>{notification}</span>
         </div>
       )}
 
-      {/* Main Top Navigation Header */}
-      <Navigation
+      {/* Left Sidebar Navigation */}
+      <Sidebar
         currentScreen={currentScreen}
         onSelectScreen={setCurrentScreen}
-        onOpenDesignReference={() => setIsDesignRefOpen(true)}
-        totalIssuesCount={issues.length}
         openIssuesCount={openIssuesCount}
         onQuickRunAll={handleRunSwarm}
         isRunningAny={isRunningSwarm}
       />
 
       {/* Main Screen Content Viewport */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-        {currentScreen === 'overview' && (
-          <OverviewScreen
-            issues={issues}
-            runs={runs}
-            onNavigate={setCurrentScreen}
-            onOpenTrace={(run) => handleOpenTrace(
-              run ? `Trace: ${run.suiteName}` : 'Playwright Failure Trace',
-              run?.findings
-            )}
-            onOpenJiraModal={(issue) => setSelectedJiraIssue(issue)}
-            onRunSwarm={handleRunSwarm}
-            isRunningSwarm={isRunningSwarm}
-          />
-        )}
+      <main className="flex-1 min-w-0 px-4 sm:px-6 lg:px-10 py-8">
+        <div className="max-w-6xl mx-auto">
+          {currentScreen === 'overview' && (
+            <OverviewScreen
+              issues={issues}
+              runs={runs}
+              onNavigate={setCurrentScreen}
+              onOpenTrace={(run) => handleOpenTrace(
+                run ? `Trace: ${run.suiteName}` : 'Playwright Failure Trace',
+                run?.findings
+              )}
+              onOpenJiraModal={(issue) => setSelectedJiraIssue(issue)}
+              onRunSwarm={handleRunSwarm}
+              isRunningSwarm={isRunningSwarm}
+            />
+          )}
 
-        {currentScreen === 'scraper' && (
-          <ScraperScreen
-            onSendAnomaliesToIssues={handleAddScrapedIssues}
-          />
-        )}
+          {currentScreen === 'scraper' && (
+            <ScraperScreen
+              onSendAnomaliesToIssues={handleAddScrapedIssues}
+            />
+          )}
 
-        {currentScreen === 'tests' && (
-          <FunctionalTestsScreen
-            onOpenTraceModal={(title, error, codeExcerpt, screenshotThumbnail) => 
-              handleOpenTrace(title, error, codeExcerpt, screenshotThumbnail)
-            }
-          />
-        )}
+          {currentScreen === 'tests' && (
+            <FunctionalTestsScreen
+              onOpenTraceModal={(title, error, codeExcerpt, screenshotThumbnail) =>
+                handleOpenTrace(title, error, codeExcerpt, screenshotThumbnail)
+              }
+            />
+          )}
 
-        {currentScreen === 'issues' && (
-          <IssuesScreen
-            issues={issues}
-            onUpdateIssueStatus={handleUpdateIssueStatus}
-            onOpenJiraModal={(issue) => setSelectedJiraIssue(issue)}
-            onOpenTraceModal={(title, error, codeExcerpt, screenshotThumbnail) =>
-              handleOpenTrace(title, error, codeExcerpt, screenshotThumbnail)
-            }
-          />
-        )}
+          {currentScreen === 'issues' && (
+            <IssuesScreen
+              issues={issues}
+              onUpdateIssueStatus={handleUpdateIssueStatus}
+              onOpenJiraModal={(issue) => setSelectedJiraIssue(issue)}
+              onOpenTraceModal={(title, error, codeExcerpt, screenshotThumbnail) =>
+                handleOpenTrace(title, error, codeExcerpt, screenshotThumbnail)
+              }
+            />
+          )}
 
-        {currentScreen === 'pins' && (
-          <ReviewPinsScreen
-            onSyncPinsToIssues={handleAddScrapedIssues}
-          />
-        )}
-      </main>
+          {currentScreen === 'pins' && (
+            <ReviewPinsScreen
+              onSyncPinsToIssues={handleAddScrapedIssues}
+            />
+          )}
 
-      {/* Footer bar */}
-      <footer className="mt-auto border-t border-slate-800/80 bg-slate-900/40 py-4">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-2">
-          <div className="flex items-center space-x-2 font-mono">
-            <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-            <span>Mini QA Platform • Precision Engineering Interface</span>
-          </div>
-          <div className="flex items-center space-x-4 font-mono text-[11px]">
-            <span>Target: saucedemo.com</span>
-            <span>Playwright 1.42</span>
-            <span>SQLite Local DB</span>
-          </div>
+          {currentScreen === 'trends' && <TrendsScreen />}
         </div>
-      </footer>
+      </main>
 
       {/* JIRA Export / Markdown Modal */}
       <JiraModal
@@ -205,12 +207,6 @@ export function App() {
         error={traceModalData.error}
         codeExcerpt={traceModalData.codeExcerpt}
         screenshotThumbnail={traceModalData.screenshotThumbnail}
-      />
-
-      {/* Original Stitch Design Reference Modal (Hotlinked Google UserContent) */}
-      <DesignReferenceModal
-        isOpen={isDesignRefOpen}
-        onClose={() => setIsDesignRefOpen(false)}
       />
     </div>
   );
