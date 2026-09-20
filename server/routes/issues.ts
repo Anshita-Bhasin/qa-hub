@@ -45,6 +45,7 @@ router.post('/', (req, res) => {
       (id, key, title, area, severity, status, firstSeen, lastSeen, persona, url, description, reproSteps, expected, actual, screenshotThumbnail, stackTrace)
     VALUES
       (@id, @key, @title, @area, @severity, @status, @firstSeen, @lastSeen, @persona, @url, @description, @reproSteps, @expected, @actual, @screenshotThumbnail, @stackTrace)
+    ON CONFLICT(id) DO NOTHING
   `);
 
   const insertMany = db.transaction((issues: any[]) => {

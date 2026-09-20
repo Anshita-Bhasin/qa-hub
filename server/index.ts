@@ -3,6 +3,7 @@ import 'express-async-errors';
 import { fileURLToPath } from 'node:url';
 import type { Database } from 'better-sqlite3';
 import { getDb } from './db';
+import { seed } from './seed';
 import issuesRouter from './routes/issues';
 import runsRouter from './routes/runs';
 import pinsRouter from './routes/pins';
@@ -33,6 +34,8 @@ const isMain = process.argv[1] && fileURLToPath(import.meta.url) === process.arg
 
 if (isMain) {
   const db = getDb();
+  const counts = seed(db);
+  console.log('Seed check:', counts);
   const app = createApp(db);
   const port = process.env.PORT ? Number(process.env.PORT) : 3001;
   app.listen(port, () => {

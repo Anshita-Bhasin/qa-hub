@@ -87,4 +87,32 @@ describe('issues API', () => {
     expect(res.status).toBe(404);
     expect(res.body.error).toBeDefined();
   });
+
+  it('does not fail when re-posting an issue that already exists (idempotent sync)', async () => {
+    const firstRes = await request(app).post('/api/issues').send(sampleIssue);
+    expect(firstRes.status).toBe(201);
+
+    // Simulate a repeat "Sync All Pins to Issues" click: same id posted again.
+    const secondRes = await request(app).post('/api/issues').send(sampleIssue);
+    expect(secondRes.status).toBe(201);
+
+    const listRes = await request(app).get('/api/issues');
+    expect(listRes.status).toBe(200);
+    // Not duplicated.
+    expect(listRes.body).toHaveLength(1);
+    // Original field values preserved (DO NOTHING, not DO UPDATE).
+    expect(listRes.body[0].title).toBe(sampleIssue.title);
+    expect(listRes.body[0].status).toBe(sampleIssue.status);
+  });
+
+  it('inserts only the new issues when a batch mixes existing and new ids', async () => {
+    await request(app).post('/api/issues').send(sampleIssue);
+
+    const second = { ...sampleIssue, id: 'iss-test-2', key: 'MQA-902' };
+    const res = await request(app).post('/api/issues').send([sampleIssue, second]);
+    expect(res.status).toBe(201);
+
+    const listRes = await request(app).get('/api/issues');
+    expect(listRes.body).toHaveLength(2);
+  });
 });
