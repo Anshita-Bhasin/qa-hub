@@ -1,4 +1,4 @@
-export type ScreenId = 'overview' | 'scraper' | 'tests' | 'issues' | 'pins';
+export type ScreenId = 'overview' | 'scraper' | 'tests' | 'issues' | 'pins' | 'trends';
 
 export type Persona = 
   | 'standard_user' 
