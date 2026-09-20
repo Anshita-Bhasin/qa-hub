@@ -1,0 +1,6 @@
+{
+  "name": "Mini QA Platform",
+  "description": "Automated QA and content scraper platform for saucedemo.com featuring Playwright functional test suites, real-time issue tracking with JIRA export, and visual review pins.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
