@@ -5,7 +5,6 @@ import os from 'node:os';
 import request from 'supertest';
 import { getDb } from '../db';
 import { createApp } from '../index';
-import pinsRouter from '../routes/pins';
 
 function tempDbPath(): string {
   return path.join(os.tmpdir(), `qa-hub-test-${Date.now()}-${Math.random()}.db`);
@@ -19,7 +18,6 @@ describe('pins API', () => {
     dbPath = tempDbPath();
     const db = getDb(dbPath);
     app = createApp(db);
-    app.use('/api/pins', pinsRouter);
   });
 
   afterEach(() => {
