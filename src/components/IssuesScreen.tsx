@@ -90,18 +90,18 @@ export const IssuesScreen: React.FC<IssuesScreenProps> = ({
   return (
     <div className="space-y-6 animate-in fade-in duration-200 pb-12">
       {/* Header */}
-      <div className="bg-slate-900/60 p-5 rounded-xl border border-slate-800 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <div className="flex items-center space-x-2">
-            <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase bg-blue-500/20 text-blue-300 border border-blue-500/30 font-semibold">
+            <span className="px-2 py-0.5 rounded text-[10px] uppercase bg-slate-100 text-slate-700 border border-slate-300 font-semibold">
               JIRA Ready
             </span>
-            <span className="text-xs text-slate-400 font-mono">Bug Tracking & Export Engine</span>
+            <span className="text-xs text-slate-500">Bug Tracking & Export Engine</span>
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight mt-1">
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight mt-1">
             Issues Log & JIRA Exporter
           </h1>
-          <p className="text-sm text-slate-400 mt-0.5">
+          <p className="text-sm text-slate-500 mt-0.5">
             Synchronized repository of anomalies identified by Playwright test suites, scraper crawler, and visual pins.
           </p>
         </div>
@@ -109,16 +109,16 @@ export const IssuesScreen: React.FC<IssuesScreenProps> = ({
         <div className="flex items-center space-x-2.5">
           <button
             onClick={handleExportCSV}
-            className="flex items-center space-x-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors shadow-sm"
+            className="flex items-center space-x-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition-colors shadow-sm"
           >
-            <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+            <FileSpreadsheet className="w-4 h-4 text-emerald-700" />
             <span>Export to CSV</span>
           </button>
 
           {filteredIssues.length > 0 && (
             <button
               onClick={() => onOpenJiraModal(filteredIssues[0])}
-              className="flex items-center space-x-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-500/25 transition-all"
+              className="flex items-center space-x-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold bg-[#FFD21E] hover:bg-[#FFC107] text-slate-900 shadow-md transition-all"
             >
               <Copy className="w-4 h-4" />
               <span>Preview JIRA Batch</span>
@@ -128,17 +128,17 @@ export const IssuesScreen: React.FC<IssuesScreenProps> = ({
       </div>
 
       {/* Multi-tier Filter & Search Bar */}
-      <div className="bg-[#1E293B] border border-slate-700/80 rounded-xl p-4 shadow-sm space-y-3">
+      <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-3">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
           {/* Search Input */}
           <div className="relative lg:col-span-2">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+            <Search className="w-4 h-4 text-slate-500 absolute left-3 top-2.5" />
             <input
               type="text"
               placeholder="Search by key (MQA-101), title, area..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-9 pr-3.5 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+              className="w-full bg-white border border-slate-300 rounded-lg pl-9 pr-3.5 py-2 text-xs text-slate-700 focus:outline-none focus:border-slate-400"
             />
           </div>
 
@@ -147,7 +147,7 @@ export const IssuesScreen: React.FC<IssuesScreenProps> = ({
             <select
               value={selectedSeverity}
               onChange={(e) => setSelectedSeverity(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 font-mono focus:outline-none focus:border-blue-500"
+              className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-700 focus:outline-none focus:border-slate-400"
             >
               <option value="all">All Severities</option>
               <option value="critical">Critical</option>
@@ -162,7 +162,7 @@ export const IssuesScreen: React.FC<IssuesScreenProps> = ({
             <select
               value={selectedArea}
               onChange={(e) => setSelectedArea(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 font-mono focus:outline-none focus:border-blue-500"
+              className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-700 focus:outline-none focus:border-slate-400"
             >
               <option value="all">All Areas</option>
               <option value="PLP">PLP (Catalog)</option>
@@ -178,7 +178,7 @@ export const IssuesScreen: React.FC<IssuesScreenProps> = ({
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 font-mono focus:outline-none focus:border-blue-500"
+              className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-700 focus:outline-none focus:border-slate-400"
             >
               <option value="all">All Statuses</option>
               <option value="open">Open</option>
@@ -189,7 +189,7 @@ export const IssuesScreen: React.FC<IssuesScreenProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center justify-between text-xs text-slate-400 pt-1">
+        <div className="flex items-center justify-between text-xs text-slate-500 pt-1">
           <span>Showing {filteredIssues.length} of {issues.length} detected issues</span>
           {(searchQuery || selectedSeverity !== 'all' || selectedArea !== 'all' || selectedStatus !== 'all') && (
             <button
@@ -199,7 +199,7 @@ export const IssuesScreen: React.FC<IssuesScreenProps> = ({
                 setSelectedArea('all');
                 setSelectedStatus('all');
               }}
-              className="text-blue-400 hover:underline font-mono"
+              className="text-slate-700 hover:underline"
             >
               Reset Filters
             </button>
@@ -208,10 +208,10 @@ export const IssuesScreen: React.FC<IssuesScreenProps> = ({
       </div>
 
       {/* Issues Table */}
-      <div className="bg-[#1E293B] border border-slate-700/80 rounded-xl shadow-sm overflow-hidden">
+      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-900/80 text-slate-400 uppercase font-mono text-[11px] border-b border-slate-800">
+            <thead className="bg-slate-50 text-slate-500 uppercase text-[11px] border-b border-slate-200">
               <tr>
                 <th className="px-5 py-3.5">Key</th>
                 <th className="px-5 py-3.5">Issue Summary</th>
@@ -223,44 +223,44 @@ export const IssuesScreen: React.FC<IssuesScreenProps> = ({
                 <th className="px-5 py-3.5 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/80">
+            <tbody className="divide-y divide-slate-200">
               {filteredIssues.map((issue) => {
                 const isCritical = issue.severity === 'critical';
                 const isHigh = issue.severity === 'high';
 
                 return (
-                  <tr key={issue.id} className="hover:bg-slate-800/40 transition-colors group">
+                  <tr key={issue.id} className="hover:bg-slate-50 transition-colors group">
                     {/* Key */}
-                    <td className="px-5 py-3.5 font-mono text-blue-400 font-semibold whitespace-nowrap">
+                    <td className="px-5 py-3.5 text-slate-700 font-semibold whitespace-nowrap">
                       {issue.key}
                     </td>
 
                     {/* Summary */}
                     <td className="px-5 py-3.5 max-w-sm">
-                      <div 
+                      <div
                         onClick={() => onOpenJiraModal(issue)}
-                        className="font-medium text-white group-hover:text-blue-300 transition-colors line-clamp-1 cursor-pointer"
+                        className="font-medium text-slate-900 group-hover:text-slate-700 transition-colors line-clamp-1 cursor-pointer"
                       >
                         {issue.title}
                       </div>
-                      <div className="text-[11px] text-slate-400 line-clamp-1 mt-0.5">
+                      <div className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">
                         {issue.description}
                       </div>
                     </td>
 
                     {/* Area */}
                     <td className="px-5 py-3.5 whitespace-nowrap">
-                      <span className="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 font-mono text-[11px] text-slate-300">
+                      <span className="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 text-[11px] text-slate-700">
                         {issue.area}
                       </span>
                     </td>
 
                     {/* Severity */}
                     <td className="px-5 py-3.5 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full font-mono text-[10px] font-semibold border ${
-                        isCritical ? 'bg-red-500/10 text-red-400 border-red-500/30' :
-                        isHigh ? 'bg-amber-500/10 text-amber-400 border-amber-500/30' :
-                        'bg-blue-500/10 text-blue-400 border-blue-500/30'
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
+                        isCritical ? 'bg-red-50 text-red-700 border-red-200' :
+                        isHigh ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                        'bg-slate-100 text-slate-700 border-slate-200'
                       }`}>
                         {issue.severity.toUpperCase()}
                       </span>
@@ -271,11 +271,11 @@ export const IssuesScreen: React.FC<IssuesScreenProps> = ({
                       <select
                         value={issue.status}
                         onChange={(e) => onUpdateIssueStatus(issue.id, e.target.value as IssueStatus)}
-                        className={`text-[11px] font-mono rounded px-2 py-1 border bg-slate-900 focus:outline-none ${
-                          issue.status === 'open' ? 'text-red-300 border-red-800' :
-                          issue.status === 'in_review' ? 'text-amber-300 border-amber-800' :
-                          issue.status === 'fixed' ? 'text-emerald-300 border-emerald-800' :
-                          'text-indigo-300 border-indigo-800'
+                        className={`text-[11px] rounded px-2 py-1 border bg-white focus:outline-none ${
+                          issue.status === 'open' ? 'text-red-700 border-red-300' :
+                          issue.status === 'in_review' ? 'text-amber-700 border-amber-300' :
+                          issue.status === 'fixed' ? 'text-emerald-700 border-emerald-300' :
+                          'text-slate-700 border-slate-300'
                         }`}
                       >
                         <option value="open">Open</option>
@@ -286,12 +286,12 @@ export const IssuesScreen: React.FC<IssuesScreenProps> = ({
                     </td>
 
                     {/* Persona */}
-                    <td className="px-5 py-3.5 whitespace-nowrap font-mono text-slate-400 text-[11px]">
+                    <td className="px-5 py-3.5 whitespace-nowrap text-slate-500 text-[11px]">
                       {issue.persona}
                     </td>
 
                     {/* Last Seen */}
-                    <td className="px-5 py-3.5 whitespace-nowrap text-slate-400 text-[11px] font-mono">
+                    <td className="px-5 py-3.5 whitespace-nowrap text-slate-500 text-[11px]">
                       {issue.lastSeen}
                     </td>
 
@@ -302,7 +302,7 @@ export const IssuesScreen: React.FC<IssuesScreenProps> = ({
                           <button
                             onClick={() => onOpenTraceModal(issue.title, issue.actual, issue.stackTrace, issue.screenshotThumbnail)}
                             title="Inspect Stack Trace Frame"
-                            className="p-1 rounded text-slate-400 hover:text-red-400 hover:bg-slate-800 transition-colors"
+                            className="p-1 rounded text-slate-500 hover:text-red-700 hover:bg-slate-100 transition-colors"
                           >
                             <Terminal className="w-3.5 h-3.5" />
                           </button>
@@ -310,13 +310,13 @@ export const IssuesScreen: React.FC<IssuesScreenProps> = ({
                         <button
                           onClick={() => handleQuickCopyJira(issue)}
                           title="Copy JIRA Format"
-                          className="p-1 rounded text-slate-400 hover:text-blue-400 hover:bg-slate-800 transition-colors"
+                          className="p-1 rounded text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-colors"
                         >
-                          {copiedKey === issue.id ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                          {copiedKey === issue.id ? <Check className="w-3.5 h-3.5 text-emerald-700" /> : <Copy className="w-3.5 h-3.5" />}
                         </button>
                         <button
                           onClick={() => onOpenJiraModal(issue)}
-                          className="text-xs text-blue-400 hover:underline font-mono"
+                          className="text-xs text-slate-700 hover:underline"
                         >
                           JIRA
                         </button>
@@ -330,13 +330,13 @@ export const IssuesScreen: React.FC<IssuesScreenProps> = ({
         </div>
 
         {/* Database Sync Status Footer */}
-        <div className="px-5 py-3 bg-slate-900/90 border-t border-slate-800 flex items-center justify-between text-xs font-mono text-slate-400">
+        <div className="px-5 py-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
           <div className="flex items-center space-x-2">
             <Database className="w-3.5 h-3.5 text-slate-500" />
             <span>sqlite:///mini_qa.db | Total records: {issues.length} | Synced</span>
           </div>
-          <span className="text-emerald-400 flex items-center space-x-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span className="text-emerald-700 flex items-center space-x-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
             <span>Live Sync Active</span>
           </span>
         </div>

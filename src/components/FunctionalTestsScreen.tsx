@@ -64,20 +64,20 @@ export const FunctionalTestsScreen: React.FC<FunctionalTestsScreenProps> = ({ on
   return (
     <div className="space-y-6 animate-in fade-in duration-200 pb-12">
       {/* Top Header / Execution telemetry */}
-      <div className="bg-slate-900/60 p-5 rounded-xl border border-slate-800 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <div className="flex items-center space-x-2">
-            <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase bg-blue-500/20 text-blue-300 border border-blue-500/30 font-semibold">
+            <span className="px-2 py-0.5 rounded text-[10px] uppercase bg-slate-100 text-slate-700 border border-slate-300 font-semibold">
               E2E Test Runner
             </span>
-            <span className="text-xs text-slate-400 font-mono">Playwright v1.42.1</span>
+            <span className="text-xs text-slate-500">Playwright v1.42.1</span>
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight mt-1">
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight mt-1">
             Functional Automation Suite
           </h1>
-          <p className="text-sm text-slate-400 mt-0.5">
+          <p className="text-sm text-slate-500 mt-0.5">
             Full checkout lifecycle, price calculations, and persona matrix validation on{' '}
-            <span className="font-mono text-blue-400">saucedemo.com</span>
+            <span className="text-slate-700">saucedemo.com</span>
           </p>
         </div>
 
@@ -87,9 +87,9 @@ export const FunctionalTestsScreen: React.FC<FunctionalTestsScreenProps> = ({ on
             onClick={handleRunTests}
             disabled={isRunning}
             className={`flex items-center space-x-2 px-4 py-2.5 rounded-lg text-xs font-semibold transition-all shadow-md ${
-              isRunning 
-                ? 'bg-blue-600/50 text-blue-200 cursor-not-allowed' 
-                : 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-500/30'
+              isRunning
+                ? 'bg-slate-300 text-slate-700 cursor-not-allowed'
+                : 'bg-[#FFD21E] hover:bg-[#FFC107] text-slate-900 shadow-slate-900/20'
             }`}
           >
             <Play className={`w-4 h-4 ${isRunning ? 'animate-spin' : ''}`} />
@@ -101,17 +101,17 @@ export const FunctionalTestsScreen: React.FC<FunctionalTestsScreenProps> = ({ on
       {/* Configuration & Worker Telemetry Bar */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         {/* Controls Card */}
-        <div className="lg:col-span-8 bg-[#1E293B] border border-slate-700/80 rounded-xl p-4 shadow-sm flex flex-wrap items-center justify-between gap-4">
+        <div className="lg:col-span-8 bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-wrap items-center justify-between gap-4">
           {/* Browser Selector */}
           <div className="flex items-center space-x-2">
-            <span className="text-xs font-medium text-slate-300">Browser:</span>
-            <div className="flex rounded-lg bg-slate-900 p-0.5 border border-slate-700">
+            <span className="text-xs font-medium text-slate-700">Browser:</span>
+            <div className="flex rounded-lg bg-slate-100 p-0.5 border border-slate-200">
               {(['chromium', 'webkit', 'firefox'] as const).map(b => (
                 <button
                   key={b}
                   onClick={() => setSelectedBrowser(b)}
-                  className={`px-2.5 py-1 rounded text-xs font-mono capitalize transition-colors ${
-                    selectedBrowser === b ? 'bg-blue-600 text-white font-medium' : 'text-slate-400 hover:text-slate-200'
+                  className={`px-2.5 py-1 rounded text-xs capitalize transition-colors ${
+                    selectedBrowser === b ? 'bg-[#FFD21E] text-slate-900 font-medium' : 'text-slate-500 hover:text-slate-700'
                   }`}
                 >
                   {b}
@@ -122,20 +122,20 @@ export const FunctionalTestsScreen: React.FC<FunctionalTestsScreenProps> = ({ on
 
           {/* User Scope */}
           <div className="flex items-center space-x-2">
-            <span className="text-xs font-medium text-slate-300">Scope:</span>
-            <div className="flex rounded-lg bg-slate-900 p-0.5 border border-slate-700">
+            <span className="text-xs font-medium text-slate-700">Scope:</span>
+            <div className="flex rounded-lg bg-slate-100 p-0.5 border border-slate-200">
               <button
                 onClick={() => setUserScope('single')}
-                className={`px-2.5 py-1 rounded text-xs font-mono transition-colors ${
-                  userScope === 'single' ? 'bg-blue-600 text-white font-medium' : 'text-slate-400 hover:text-slate-200'
+                className={`px-2.5 py-1 rounded text-xs transition-colors ${
+                  userScope === 'single' ? 'bg-[#FFD21E] text-slate-900 font-medium' : 'text-slate-500 hover:text-slate-700'
                 }`}
               >
                 Single User
               </button>
               <button
                 onClick={() => setUserScope('batch')}
-                className={`px-2.5 py-1 rounded text-xs font-mono transition-colors ${
-                  userScope === 'batch' ? 'bg-blue-600 text-white font-medium' : 'text-slate-400 hover:text-slate-200'
+                className={`px-2.5 py-1 rounded text-xs transition-colors ${
+                  userScope === 'batch' ? 'bg-[#FFD21E] text-slate-900 font-medium' : 'text-slate-500 hover:text-slate-700'
                 }`}
               >
                 Batch (All 6 Users)
@@ -144,26 +144,26 @@ export const FunctionalTestsScreen: React.FC<FunctionalTestsScreenProps> = ({ on
           </div>
 
           {/* Telemetry quick badges */}
-          <div className="flex items-center space-x-3 text-xs font-mono text-slate-400">
+          <div className="flex items-center space-x-3 text-xs text-slate-500">
             <span className="flex items-center space-x-1">
-              <Cpu className="w-3.5 h-3.5 text-blue-400" />
+              <Cpu className="w-3.5 h-3.5 text-slate-500" />
               <span>2 Workers</span>
             </span>
             <span>•</span>
-            <span className="text-emerald-400">Headless Mode</span>
+            <span className="text-emerald-700">Headless Mode</span>
           </div>
         </div>
 
         {/* Summary Metric */}
-        <div className="lg:col-span-4 bg-[#1E293B] border border-slate-700/80 rounded-xl p-4 shadow-sm flex items-center justify-between">
+        <div className="lg:col-span-4 bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex items-center justify-between">
           <div>
-            <span className="text-[11px] font-mono uppercase text-slate-400 block">Suite Health</span>
+            <span className="text-[11px] uppercase text-slate-500 block">Suite Health</span>
             <div className="flex items-baseline space-x-2 mt-0.5">
-              <span className="text-xl font-bold font-mono text-white">17 / 18</span>
-              <span className="text-xs font-mono text-slate-400">Steps Passed</span>
+              <span className="text-xl font-bold text-slate-900">17 / 18</span>
+              <span className="text-xs text-slate-500">Steps Passed</span>
             </div>
           </div>
-          <span className="px-2.5 py-1 rounded-md text-xs font-mono font-semibold bg-red-500/20 text-red-300 border border-red-500/30">
+          <span className="px-2.5 py-1 rounded-md text-xs font-semibold bg-red-50 text-red-700 border border-red-200">
             1 Failed Assertion
           </span>
         </div>
@@ -179,43 +179,43 @@ export const FunctionalTestsScreen: React.FC<FunctionalTestsScreenProps> = ({ on
           return (
             <div
               key={suite.id}
-              className={`bg-[#1E293B] border rounded-xl overflow-hidden shadow-sm transition-all ${
-                isFailed 
-                  ? 'border-red-500/60 shadow-red-950/20' 
-                  : 'border-slate-700/80'
+              className={`bg-white border rounded-xl overflow-hidden shadow-sm transition-all ${
+                isFailed
+                  ? 'border-red-200 shadow-slate-900/5'
+                  : 'border-slate-200'
               }`}
             >
               {/* Suite Header */}
-              <div className="p-4 bg-slate-800/60 border-b border-slate-700/70 flex flex-wrap items-center justify-between gap-3">
+              <div className="p-4 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center space-x-3">
                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center border ${
-                    isFailed ? 'bg-red-500/20 text-red-400 border-red-500/30' :
-                    isPassed ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' :
-                    'bg-blue-500/20 text-blue-400 border-blue-500/30'
+                    isFailed ? 'bg-red-50 text-red-700 border-red-200' :
+                    isPassed ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                    'bg-slate-100 text-slate-700 border-slate-300'
                   }`}>
-                    {isFailed ? <XCircle className="w-5 h-5" /> : 
-                     isPassed ? <CheckCircle2 className="w-5 h-5" /> : 
+                    {isFailed ? <XCircle className="w-5 h-5" /> :
+                     isPassed ? <CheckCircle2 className="w-5 h-5" /> :
                      <RefreshCw className="w-5 h-5 animate-spin" />}
                   </div>
 
                   <div>
                     <div className="flex items-center space-x-2">
-                      <h2 className="text-sm font-semibold text-white">{suite.name}</h2>
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
+                      <h2 className="text-sm font-semibold text-slate-900">{suite.name}</h2>
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">
                         {suite.persona}
                       </span>
                     </div>
-                    <span className="text-xs text-slate-400 font-mono">
+                    <span className="text-xs text-slate-500">
                       {suite.steps.length} steps • duration: {(suite.totalDurationMs / 1000).toFixed(2)}s
                     </span>
                   </div>
                 </div>
 
                 <div className="flex items-center space-x-2">
-                  <span className={`px-2.5 py-1 rounded font-mono text-xs uppercase font-semibold border ${
-                    isFailed ? 'bg-red-500/20 text-red-300 border-red-500/40' :
-                    isPassed ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' :
-                    'bg-blue-500/20 text-blue-300 border-blue-500/40'
+                  <span className={`px-2.5 py-1 rounded text-xs uppercase font-semibold border ${
+                    isFailed ? 'bg-red-50 text-red-700 border-red-200' :
+                    isPassed ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                    'bg-slate-100 text-slate-700 border-slate-300'
                   }`}>
                     {suite.status}
                   </span>
@@ -227,37 +227,37 @@ export const FunctionalTestsScreen: React.FC<FunctionalTestsScreenProps> = ({ on
                 {suite.steps.map((step, idx) => (
                   <div
                     key={idx}
-                    className={`p-3 rounded-lg border text-xs font-mono transition-colors ${
+                    className={`p-3 rounded-lg border text-xs transition-colors ${
                       step.status === 'failed'
-                        ? 'bg-red-950/40 border-red-800 text-red-200'
-                        : 'bg-slate-900/60 border-slate-800 text-slate-300'
+                        ? 'bg-red-50 border-red-200 text-red-700'
+                        : 'bg-slate-50 border-slate-200 text-slate-700'
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2.5">
                         {step.status === 'failed' ? (
-                          <XCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
+                          <XCircle className="w-4 h-4 text-red-700 flex-shrink-0" />
                         ) : (
-                          <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                          <CheckCircle2 className="w-4 h-4 text-emerald-700 flex-shrink-0" />
                         )}
-                        <span className={step.status === 'failed' ? 'font-semibold text-red-300' : 'text-slate-200'}>
+                        <span className={step.status === 'failed' ? 'font-semibold text-red-700' : 'text-slate-700'}>
                           {step.name}
                         </span>
                       </div>
-                      <span className="text-[11px] text-slate-400">{step.durationMs}ms</span>
+                      <span className="text-[11px] text-slate-500">{step.durationMs}ms</span>
                     </div>
 
                     {/* If failed, show error excerpt and callout button */}
                     {step.status === 'failed' && (
-                      <div className="mt-3 pt-3 border-t border-red-900/60 space-y-2 font-sans">
-                        <div className="p-2.5 rounded bg-red-900/30 border border-red-800 text-xs font-mono text-red-300">
+                      <div className="mt-3 pt-3 border-t border-red-200 space-y-2 font-sans">
+                        <div className="p-2.5 rounded bg-red-50 border border-red-200 text-xs text-red-700">
                           {step.error}
                         </div>
 
                         {step.codeExcerpt && (
                           <div className="space-y-1">
-                            <span className="text-[11px] font-mono text-slate-400">Code assertion failure:</span>
-                            <pre className="p-3 rounded bg-black/60 border border-slate-800 text-slate-300 font-mono text-xs overflow-x-auto whitespace-pre">
+                            <span className="text-[11px] text-slate-500">Code assertion failure:</span>
+                            <pre className="p-3 rounded bg-slate-900 border border-slate-800 text-slate-100 font-mono text-xs overflow-x-auto whitespace-pre">
                               {step.codeExcerpt}
                             </pre>
                           </div>
@@ -285,9 +285,9 @@ export const FunctionalTestsScreen: React.FC<FunctionalTestsScreenProps> = ({ on
                                 step.codeExcerpt,
                                 step.screenshotThumbnail
                               )}
-                              className="flex items-center space-x-1.5 px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium transition-colors"
+                              className="flex items-center space-x-1.5 px-3 py-1.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-medium transition-colors"
                             >
-                              <ImageIcon className="w-3.5 h-3.5 text-blue-400" />
+                              <ImageIcon className="w-3.5 h-3.5 text-slate-500" />
                               <span>View Failure Thumbnail</span>
                             </button>
                           )}
