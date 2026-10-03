@@ -1,25 +1,27 @@
 import { Router } from 'express';
-import type { Database } from 'better-sqlite3';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 const router = Router();
 
-router.get('/', (req, res) => {
-  const db: Database = req.app.locals.db;
-  const rows = db.prepare('SELECT * FROM runs ORDER BY recordedAt DESC').all();
-  res.json(rows);
+router.get('/', async (req, res) => {
+  const supabase: SupabaseClient = req.app.locals.supabase;
+  const { data, error } = await supabase.from('runs').select('*').order('recordedAt', { ascending: false });
+
+  if (error) {
+    return res.status(400).json({ error: error.message });
+  }
+
+  res.json(data);
 });
 
-router.post('/', (req, res) => {
-  const db: Database = req.app.locals.db;
+router.post('/', async (req, res) => {
+  const supabase: SupabaseClient = req.app.locals.supabase;
   const run = { ...req.body, recordedAt: Date.now() };
 
-  try {
-    db.prepare(`
-      INSERT INTO runs (id, timestamp, persona, targetRoute, findings, status, duration, suiteName, recordedAt)
-      VALUES (@id, @timestamp, @persona, @targetRoute, @findings, @status, @duration, @suiteName, @recordedAt)
-    `).run(run);
-  } catch (err: any) {
-    return res.status(400).json({ error: err.message });
+  const { error } = await supabase.from('runs').insert(run);
+
+  if (error) {
+    return res.status(400).json({ error: error.message });
   }
 
   res.status(201).json(run);

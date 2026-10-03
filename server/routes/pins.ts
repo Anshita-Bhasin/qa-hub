@@ -1,63 +1,79 @@
 import { Router } from 'express';
-import type { Database } from 'better-sqlite3';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 const router = Router();
 
-router.get('/', (req, res) => {
-  const db: Database = req.app.locals.db;
-  res.json(db.prepare('SELECT * FROM pins ORDER BY timestamp DESC').all());
+router.get('/', async (req, res) => {
+  const supabase: SupabaseClient = req.app.locals.supabase;
+  const { data, error } = await supabase.from('pins').select('*').order('timestamp', { ascending: false });
+
+  if (error) {
+    return res.status(400).json({ error: error.message });
+  }
+
+  res.json(data);
 });
 
-router.post('/', (req, res) => {
-  const db: Database = req.app.locals.db;
-  try {
-    db.prepare(`
-      INSERT INTO pins (id, xPercent, yPercent, title, description, severity, pageUrl, elementSelector, timestamp, author, status)
-      VALUES (@id, @xPercent, @yPercent, @title, @description, @severity, @pageUrl, @elementSelector, @timestamp, @author, @status)
-    `).run(req.body);
-  } catch (err: any) {
-    return res.status(400).json({ error: err.message });
+router.post('/', async (req, res) => {
+  const supabase: SupabaseClient = req.app.locals.supabase;
+  const { error } = await supabase.from('pins').insert(req.body);
+
+  if (error) {
+    return res.status(400).json({ error: error.message });
   }
+
   res.status(201).json(req.body);
 });
 
-router.patch('/:id', (req, res) => {
-  const db: Database = req.app.locals.db;
-  const existing = db.prepare('SELECT * FROM pins WHERE id = ?').get(req.params.id);
+router.patch('/:id', async (req, res) => {
+  const supabase: SupabaseClient = req.app.locals.supabase;
+  const { data: existing, error: fetchError } = await supabase
+    .from('pins')
+    .select('*')
+    .eq('id', req.params.id)
+    .maybeSingle();
+
+  if (fetchError) {
+    return res.status(400).json({ error: fetchError.message });
+  }
 
   if (!existing) {
     return res.status(404).json({ error: `Pin ${req.params.id} not found` });
   }
 
   const updated = { ...existing, ...req.body };
-  try {
-    db.prepare(`
-      UPDATE pins SET
-        xPercent=@xPercent, yPercent=@yPercent, title=@title, description=@description,
-        severity=@severity, pageUrl=@pageUrl, elementSelector=@elementSelector,
-        timestamp=@timestamp, author=@author, status=@status
-      WHERE id=@id
-    `).run(updated);
-  } catch (err: any) {
-    return res.status(400).json({ error: err.message });
+  const { error: updateError } = await supabase.from('pins').update(updated).eq('id', req.params.id);
+
+  if (updateError) {
+    return res.status(400).json({ error: updateError.message });
   }
 
   res.json(updated);
 });
 
-router.delete('/:id', (req, res) => {
-  const db: Database = req.app.locals.db;
-  try {
-    const result = db.prepare('DELETE FROM pins WHERE id = ?').run(req.params.id);
+router.delete('/:id', async (req, res) => {
+  const supabase: SupabaseClient = req.app.locals.supabase;
+  const { data: existing, error: fetchError } = await supabase
+    .from('pins')
+    .select('id')
+    .eq('id', req.params.id)
+    .maybeSingle();
 
-    if (result.changes === 0) {
-      return res.status(404).json({ error: `Pin ${req.params.id} not found` });
-    }
-
-    res.status(204).send();
-  } catch (err: any) {
-    return res.status(400).json({ error: err.message });
+  if (fetchError) {
+    return res.status(400).json({ error: fetchError.message });
   }
+
+  if (!existing) {
+    return res.status(404).json({ error: `Pin ${req.params.id} not found` });
+  }
+
+  const { error: deleteError } = await supabase.from('pins').delete().eq('id', req.params.id);
+
+  if (deleteError) {
+    return res.status(400).json({ error: deleteError.message });
+  }
+
+  res.status(204).send();
 });
 
 export default router;

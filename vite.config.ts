@@ -24,5 +24,13 @@ export default defineConfig(() => {
         },
       },
     },
+    test: {
+      setupFiles: ['./server/test/setupEnv.ts'],
+      // Server tests share one real Supabase `test` schema across files
+      // (no per-file temp DB like the old SQLite setup), so test files must
+      // not run concurrently — parallel files would race on the same tables'
+      // rows via their beforeEach/afterEach cleanup and inserts.
+      fileParallelism: false,
+    },
   };
 });
