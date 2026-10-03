@@ -1,79 +1,43 @@
 import { Router } from 'express';
-import type { Database } from 'better-sqlite3';
-
-interface ProductRow {
-  id: number;
-  name: string;
-  price: number;
-  extractedPriceStr: string;
-  imgUrl: string;
-  isBrokenImage: number;
-  isDuplicateAsset: number;
-  duplicateNote: string | null;
-  isPriceGlitch: number;
-  missingDescription: number;
-  location: string;
-  deepLink: string;
-  status: string;
-  statusLabel: string;
-}
-
-function rowToProduct(row: ProductRow) {
-  return {
-    ...row,
-    isBrokenImage: !!row.isBrokenImage,
-    isDuplicateAsset: !!row.isDuplicateAsset,
-    isPriceGlitch: !!row.isPriceGlitch,
-    missingDescription: !!row.missingDescription
-  };
-}
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 const router = Router();
 
-router.get('/', (req, res) => {
-  const db: Database = req.app.locals.db;
-  const rows = db.prepare('SELECT * FROM products ORDER BY id').all() as ProductRow[];
-  res.json(rows.map(rowToProduct));
+router.get('/', async (req, res) => {
+  const supabase: SupabaseClient = req.app.locals.supabase;
+  const { data, error } = await supabase.from('products').select('*').order('id', { ascending: true });
+
+  if (error) {
+    return res.status(400).json({ error: error.message });
+  }
+
+  // Postgres returns real booleans already (unlike SQLite's 0/1 integers),
+  // so no coercion is needed here — kept as a passthrough for clarity.
+  res.json(data);
 });
 
-router.post('/', (req, res) => {
-  const db: Database = req.app.locals.db;
+router.post('/', async (req, res) => {
+  const supabase: SupabaseClient = req.app.locals.supabase;
   const input = Array.isArray(req.body) ? req.body : [req.body];
 
   if (input.length === 0) {
     return res.status(400).json({ error: 'Request body must be a product or a non-empty array of products' });
   }
 
-  const upsert = db.prepare(`
-    INSERT INTO products
-      (id, name, price, extractedPriceStr, imgUrl, isBrokenImage, isDuplicateAsset, duplicateNote, isPriceGlitch, missingDescription, location, deepLink, status, statusLabel)
-    VALUES
-      (@id, @name, @price, @extractedPriceStr, @imgUrl, @isBrokenImage, @isDuplicateAsset, @duplicateNote, @isPriceGlitch, @missingDescription, @location, @deepLink, @status, @statusLabel)
-    ON CONFLICT(id) DO UPDATE SET
-      name=excluded.name, price=excluded.price, extractedPriceStr=excluded.extractedPriceStr,
-      imgUrl=excluded.imgUrl, isBrokenImage=excluded.isBrokenImage, isDuplicateAsset=excluded.isDuplicateAsset,
-      duplicateNote=excluded.duplicateNote, isPriceGlitch=excluded.isPriceGlitch,
-      missingDescription=excluded.missingDescription, location=excluded.location,
-      deepLink=excluded.deepLink, status=excluded.status, statusLabel=excluded.statusLabel
-  `);
+  const rows = input.map((p: any) => ({
+    ...p,
+    isBrokenImage: !!p.isBrokenImage,
+    isDuplicateAsset: !!p.isDuplicateAsset,
+    isPriceGlitch: !!p.isPriceGlitch,
+    missingDescription: !!p.missingDescription,
+    duplicateNote: p.duplicateNote ?? null
+  }));
 
-  const upsertMany = db.transaction((products: any[]) => {
-    for (const p of products) {
-      upsert.run({
-        ...p,
-        isBrokenImage: p.isBrokenImage ? 1 : 0,
-        isDuplicateAsset: p.isDuplicateAsset ? 1 : 0,
-        isPriceGlitch: p.isPriceGlitch ? 1 : 0,
-        missingDescription: p.missingDescription ? 1 : 0,
-        duplicateNote: p.duplicateNote ?? null
-      });
-    }
-  });
+  // Matches the previous SQLite `ON CONFLICT(id) DO UPDATE`: existing ids are overwritten.
+  const { error } = await supabase.from('products').upsert(rows, { onConflict: 'id' });
 
-  try {
-    upsertMany(input);
-  } catch (err: any) {
-    return res.status(400).json({ error: err.message });
+  if (error) {
+    return res.status(400).json({ error: error.message });
   }
 
   res.status(201).json(Array.isArray(req.body) ? input : input[0]);

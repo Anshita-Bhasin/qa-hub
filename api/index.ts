@@ -2,19 +2,16 @@
 // Wraps the same Express app used for local dev (server/index.ts) so
 // /api/* routes are served as a single serverless function on Vercel.
 //
-// NOTE: this still uses the SQLite-backed app (server/db.ts), which reads
-// and writes a file under server/data/. On Vercel's serverless filesystem
-// that directory is read-only except for /tmp, and /tmp is NOT persisted
-// between invocations — so writes (new pins, issues, etc.) will appear to
-// succeed but will not survive past the current request/lambda instance.
-// This is fine for a first "does it deploy" smoke test, but real usage
-// (e.g. the Pins feature persisting data) needs the Supabase-backed DB.
-import { getDb } from '../server/db';
+// Persistence is handled by Supabase (Postgres) over the network via
+// server/supabaseClient.ts — unlike the earlier SQLite-backed version,
+// there is no local/tmp filesystem dependency here, so writes persist
+// correctly across invocations and lambda instances.
+import { createSupabaseClient } from '../server/supabaseClient';
 import { seed } from '../server/seed';
 import { createApp } from '../server/index';
 
-const db = getDb('/tmp/qa-hub.db');
-seed(db);
-const app = createApp(db);
+const supabase = createSupabaseClient();
+await seed(supabase);
+const app = createApp(supabase);
 
 export default app;

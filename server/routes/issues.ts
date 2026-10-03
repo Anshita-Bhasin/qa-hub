@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import type { Database } from 'better-sqlite3';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 interface IssueRow {
   id: string;
@@ -26,51 +26,54 @@ function rowToIssue(row: IssueRow) {
 
 const router = Router();
 
-router.get('/', (req, res) => {
-  const db: Database = req.app.locals.db;
-  const rows = db.prepare('SELECT * FROM issues ORDER BY firstSeen DESC').all() as IssueRow[];
-  res.json(rows.map(rowToIssue));
+router.get('/', async (req, res) => {
+  const supabase: SupabaseClient = req.app.locals.supabase;
+  const { data, error } = await supabase.from('issues').select('*').order('firstSeen', { ascending: false });
+
+  if (error) {
+    return res.status(400).json({ error: error.message });
+  }
+
+  res.json((data as IssueRow[]).map(rowToIssue));
 });
 
-router.post('/', (req, res) => {
-  const db: Database = req.app.locals.db;
+router.post('/', async (req, res) => {
+  const supabase: SupabaseClient = req.app.locals.supabase;
   const input = Array.isArray(req.body) ? req.body : [req.body];
 
   if (input.length === 0) {
     return res.status(400).json({ error: 'Request body must be an issue or a non-empty array of issues' });
   }
 
-  const insert = db.prepare(`
-    INSERT INTO issues
-      (id, key, title, area, severity, status, firstSeen, lastSeen, persona, url, description, reproSteps, expected, actual, screenshotThumbnail, stackTrace)
-    VALUES
-      (@id, @key, @title, @area, @severity, @status, @firstSeen, @lastSeen, @persona, @url, @description, @reproSteps, @expected, @actual, @screenshotThumbnail, @stackTrace)
-    ON CONFLICT(id) DO NOTHING
-  `);
+  const rows = input.map((issue: any) => ({
+    ...issue,
+    reproSteps: JSON.stringify(issue.reproSteps ?? []),
+    screenshotThumbnail: issue.screenshotThumbnail ?? null,
+    stackTrace: issue.stackTrace ?? null
+  }));
 
-  const insertMany = db.transaction((issues: any[]) => {
-    for (const issue of issues) {
-      insert.run({
-        ...issue,
-        reproSteps: JSON.stringify(issue.reproSteps ?? []),
-        screenshotThumbnail: issue.screenshotThumbnail ?? null,
-        stackTrace: issue.stackTrace ?? null
-      });
-    }
-  });
+  // Matches the previous SQLite `ON CONFLICT(id) DO NOTHING`: existing ids are
+  // left untouched, not overwritten (idempotent re-sync from the frontend).
+  const { error } = await supabase.from('issues').upsert(rows, { onConflict: 'id', ignoreDuplicates: true });
 
-  try {
-    insertMany(input);
-  } catch (err: any) {
-    return res.status(400).json({ error: err.message });
+  if (error) {
+    return res.status(400).json({ error: error.message });
   }
 
   res.status(201).json(Array.isArray(req.body) ? input : input[0]);
 });
 
-router.patch('/:id', (req, res) => {
-  const db: Database = req.app.locals.db;
-  const existing = db.prepare('SELECT * FROM issues WHERE id = ?').get(req.params.id) as IssueRow | undefined;
+router.patch('/:id', async (req, res) => {
+  const supabase: SupabaseClient = req.app.locals.supabase;
+  const { data: existing, error: fetchError } = await supabase
+    .from('issues')
+    .select('*')
+    .eq('id', req.params.id)
+    .maybeSingle();
+
+  if (fetchError) {
+    return res.status(400).json({ error: fetchError.message });
+  }
 
   if (!existing) {
     return res.status(404).json({ error: `Issue ${req.params.id} not found` });
@@ -82,14 +85,11 @@ router.patch('/:id', (req, res) => {
     reproSteps: req.body.reproSteps ? JSON.stringify(req.body.reproSteps) : existing.reproSteps
   };
 
-  db.prepare(`
-    UPDATE issues SET
-      key=@key, title=@title, area=@area, severity=@severity, status=@status,
-      firstSeen=@firstSeen, lastSeen=@lastSeen, persona=@persona, url=@url,
-      description=@description, reproSteps=@reproSteps, expected=@expected,
-      actual=@actual, screenshotThumbnail=@screenshotThumbnail, stackTrace=@stackTrace
-    WHERE id=@id
-  `).run(updated);
+  const { error: updateError } = await supabase.from('issues').update(updated).eq('id', req.params.id);
+
+  if (updateError) {
+    return res.status(400).json({ error: updateError.message });
+  }
 
   res.json(rowToIssue(updated as IssueRow));
 });

@@ -1,27 +1,19 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import fs from 'node:fs';
-import path from 'node:path';
-import os from 'node:os';
 import request from 'supertest';
-import { getDb } from '../db';
+import { createTestSupabaseClient } from './testClient';
 import { createApp } from '../index';
 
-function tempDbPath(): string {
-  return path.join(os.tmpdir(), `qa-hub-test-${Date.now()}-${Math.random()}.db`);
-}
-
 describe('runs API', () => {
-  let dbPath: string;
+  const supabase = createTestSupabaseClient();
   let app: ReturnType<typeof createApp>;
 
-  beforeEach(() => {
-    dbPath = tempDbPath();
-    const db = getDb(dbPath);
-    app = createApp(db);
+  beforeEach(async () => {
+    await supabase.from('runs').delete().neq('id', '');
+    app = createApp(supabase);
   });
 
-  afterEach(() => {
-    if (fs.existsSync(dbPath)) fs.unlinkSync(dbPath);
+  afterEach(async () => {
+    await supabase.from('runs').delete().neq('id', '');
   });
 
   const sampleRun = {
