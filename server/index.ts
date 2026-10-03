@@ -5,12 +5,12 @@ import express from 'express';
 import 'express-async-errors';
 import { fileURLToPath } from 'node:url';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { createSupabaseClient } from './supabaseClient';
-import { seed } from './seed';
-import issuesRouter from './routes/issues';
-import runsRouter from './routes/runs';
-import pinsRouter from './routes/pins';
-import productsRouter from './routes/products';
+import { createSupabaseClient } from './supabaseClient.js';
+import { seed } from './seed.js';
+import issuesRouter from './routes/issues.js';
+import runsRouter from './routes/runs.js';
+import pinsRouter from './routes/pins.js';
+import productsRouter from './routes/products.js';
 
 export function createApp(supabase: SupabaseClient): express.Express {
   const app = express();
