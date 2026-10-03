@@ -2,14 +2,14 @@ import dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
 
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { createSupabaseClient } from './supabaseClient';
+import { createSupabaseClient } from './supabaseClient.js';
 import {
   INITIAL_ISSUES,
   INITIAL_PRODUCTS,
   PROBLEM_USER_PRODUCTS,
   INITIAL_PINS,
   INITIAL_RUNS
-} from '../src/data/initialData';
+} from '../src/data/initialData.js';
 import { fileURLToPath } from 'node:url';
 
 export async function seed(

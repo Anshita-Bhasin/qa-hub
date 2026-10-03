@@ -6,9 +6,9 @@
 // server/supabaseClient.ts — unlike the earlier SQLite-backed version,
 // there is no local/tmp filesystem dependency here, so writes persist
 // correctly across invocations and lambda instances.
-import { createSupabaseClient } from '../server/supabaseClient';
-import { seed } from '../server/seed';
-import { createApp } from '../server/index';
+import { createSupabaseClient } from '../server/supabaseClient.js';
+import { seed } from '../server/seed.js';
+import { createApp } from '../server/index.js';
 
 const supabase = createSupabaseClient();
 await seed(supabase);
