@@ -11,6 +11,7 @@ import issuesRouter from './routes/issues.js';
 import runsRouter from './routes/runs.js';
 import pinsRouter from './routes/pins.js';
 import productsRouter from './routes/products.js';
+import jiraRouter from './routes/jira.js';
 
 export function createApp(supabase: SupabaseClient): express.Express {
   const app = express();
@@ -21,6 +22,7 @@ export function createApp(supabase: SupabaseClient): express.Express {
   app.use('/api/runs', runsRouter);
   app.use('/api/pins', pinsRouter);
   app.use('/api/products', productsRouter);
+  app.use('/api/jira', jiraRouter);
 
   app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     console.error(err);

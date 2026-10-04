@@ -29,6 +29,8 @@ export interface DetectedIssue {
   actual: string;
   screenshotThumbnail?: string;
   stackTrace?: string;
+  jiraKey?: string;
+  jiraUrl?: string;
 }
 
 export interface ProductItem {
