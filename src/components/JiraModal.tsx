@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
 import { DetectedIssue } from '../types';
-import { X, Copy, Check, Download, FileText, Bug, ExternalLink } from 'lucide-react';
+import { postJSON } from '../utils/api';
+import { X, Copy, Check, Download, FileText, Bug, ExternalLink, Loader2 } from 'lucide-react';
 
 interface JiraModalProps {
   issue: DetectedIssue | null;
   onClose: () => void;
+  onIssueLinkedToJira: (id: string, jiraKey: string, jiraUrl: string) => void;
 }
 
-export const JiraModal: React.FC<JiraModalProps> = ({ issue, onClose }) => {
+export const JiraModal: React.FC<JiraModalProps> = ({ issue, onClose, onIssueLinkedToJira }) => {
   const [copied, setCopied] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
 
   if (!issue) return null;
 
@@ -44,6 +48,18 @@ _Reported via QA Agent (Automated Playwright & Content Scraper Suite)_`;
     navigator.clipboard.writeText(jiraMarkdown);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleCreateInJira = () => {
+    if (issue.jiraKey || creating) return;
+    setCreating(true);
+    setCreateError(null);
+    postJSON<{ jiraKey: string; jiraUrl: string }>(`/api/jira/issues/${issue.id}`, {})
+      .then(({ jiraKey, jiraUrl }) => {
+        onIssueLinkedToJira(issue.id, jiraKey, jiraUrl);
+      })
+      .catch(err => setCreateError(err.message))
+      .finally(() => setCreating(false));
   };
 
   const handleDownloadJson = () => {
@@ -142,31 +158,54 @@ _Reported via QA Agent (Automated Playwright & Content Scraper Suite)_`;
 
         {/* Modal Footer */}
         <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200 bg-slate-50">
-          <button
-            onClick={handleDownloadJson}
-            className="flex items-center space-x-2 px-3.5 py-2 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-200 transition-colors"
-          >
-            <Download className="w-3.5 h-3.5 text-slate-400" />
-            <span>Download JSON Payload</span>
-          </button>
           <div className="flex items-center space-x-2">
+            <button
+              onClick={handleDownloadJson}
+              className="flex items-center space-x-2 px-3.5 py-2 rounded-lg text-xs font-medium text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-200 transition-colors"
+            >
+              <Download className="w-3.5 h-3.5 text-slate-400" />
+              <span>Download JSON Payload</span>
+            </button>
+            <button
+              onClick={handleCopy}
+              className={`flex items-center space-x-2 px-3.5 py-2 rounded-lg text-xs font-medium transition-all border ${
+                copied
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                  : 'bg-white hover:bg-slate-100 text-slate-600 border-slate-200'
+              }`}
+            >
+              {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5 text-slate-400" />}
+              <span>{copied ? 'Copied!' : 'Copy Markdown'}</span>
+            </button>
+          </div>
+          <div className="flex items-center space-x-3">
+            {createError && <span className="text-xs text-red-600 max-w-xs text-right">{createError}</span>}
             <button
               onClick={onClose}
               className="px-4 py-2 rounded-lg text-xs font-medium text-slate-500 hover:text-slate-900 transition-colors"
             >
               Close
             </button>
-            <button
-              onClick={handleCopy}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-xs font-medium transition-all ${
-                copied
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-[#FFD21E] hover:bg-[#FFC107] text-slate-900 shadow-sm'
-              }`}
-            >
-              {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-              <span>{copied ? 'Copied to Clipboard!' : 'Copy JIRA Markdown'}</span>
-            </button>
+            {issue.jiraKey ? (
+              <a
+                href={issue.jiraUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center space-x-2 px-4 py-2 rounded-lg text-xs font-medium bg-emerald-600 text-white shadow-sm"
+              >
+                <ExternalLink className="w-4 h-4" />
+                <span>View {issue.jiraKey} in JIRA</span>
+              </a>
+            ) : (
+              <button
+                onClick={handleCreateInJira}
+                disabled={creating}
+                className="flex items-center space-x-2 px-4 py-2 rounded-lg text-xs font-medium transition-all bg-[#FFD21E] hover:bg-[#FFC107] text-slate-900 shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Bug className="w-4 h-4" />}
+                <span>{creating ? 'Creating in JIRA…' : 'Create in JIRA'}</span>
+              </button>
+            )}
           </div>
         </div>
       </div>

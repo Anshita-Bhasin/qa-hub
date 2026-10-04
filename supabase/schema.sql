@@ -18,7 +18,9 @@ create table if not exists issues (
   expected text not null,
   actual text not null,
   "screenshotThumbnail" text,
-  "stackTrace" text
+  "stackTrace" text,
+  "jiraKey" text,
+  "jiraUrl" text
 );
 
 create table if not exists runs (

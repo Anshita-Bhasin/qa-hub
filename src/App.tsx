@@ -57,6 +57,14 @@ export function App() {
       .catch(err => showToast(`Failed to update issue: ${err.message}`));
   };
 
+  // Reflect a freshly created JIRA link onto the local issue (the server has
+  // already persisted jiraKey/jiraUrl onto the row at this point).
+  const handleIssueLinkedToJira = (id: string, jiraKey: string, jiraUrl: string) => {
+    setIssues(prev => prev.map(issue => (issue.id === id ? { ...issue, jiraKey, jiraUrl } : issue)));
+    setSelectedJiraIssue(prev => (prev && prev.id === id ? { ...prev, jiraKey, jiraUrl } : prev));
+    showToast(`Created JIRA issue ${jiraKey}`);
+  };
+
   // Add newly scraped anomalies to issues list
   const handleAddScrapedIssues = (newIssues: DetectedIssue[]) => {
     postJSON<DetectedIssue[]>('/api/issues', newIssues)
@@ -178,6 +186,7 @@ export function App() {
               onOpenTraceModal={(title, error, codeExcerpt, screenshotThumbnail) =>
                 handleOpenTrace(title, error, codeExcerpt, screenshotThumbnail)
               }
+              onIssueLinkedToJira={handleIssueLinkedToJira}
             />
           )}
 
@@ -195,6 +204,7 @@ export function App() {
       <JiraModal
         issue={selectedJiraIssue}
         onClose={() => setSelectedJiraIssue(null)}
+        onIssueLinkedToJira={handleIssueLinkedToJira}
       />
 
       {/* Playwright Failure Trace / Code Excerpt Modal */}

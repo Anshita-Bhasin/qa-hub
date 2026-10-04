@@ -1,19 +1,21 @@
 import React, { useState } from 'react';
 import { DetectedIssue, IssueSeverity, IssueStatus, IssueArea, Persona } from '../types';
-import { 
-  Bug, 
-  Search, 
-  Filter, 
-  Download, 
-  Copy, 
-  ExternalLink, 
-  Check, 
-  AlertTriangle, 
+import { postJSON } from '../utils/api';
+import {
+  Bug,
+  Search,
+  Filter,
+  Download,
+  Copy,
+  ExternalLink,
+  Check,
+  AlertTriangle,
   Database,
   FileSpreadsheet,
   Terminal,
   CheckCircle2,
-  Trash2
+  Trash2,
+  Loader2
 } from 'lucide-react';
 
 interface IssuesScreenProps {
@@ -21,6 +23,7 @@ interface IssuesScreenProps {
   onUpdateIssueStatus: (id: string, newStatus: IssueStatus) => void;
   onOpenJiraModal: (issue: DetectedIssue) => void;
   onOpenTraceModal: (title: string, error?: string, codeExcerpt?: string, screenshotThumbnail?: string) => void;
+  onIssueLinkedToJira: (id: string, jiraKey: string, jiraUrl: string) => void;
 }
 
 export const IssuesScreen: React.FC<IssuesScreenProps> = ({
@@ -28,13 +31,15 @@ export const IssuesScreen: React.FC<IssuesScreenProps> = ({
   onUpdateIssueStatus,
   onOpenJiraModal,
   onOpenTraceModal,
+  onIssueLinkedToJira,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSeverity, setSelectedSeverity] = useState<string>('all');
   const [selectedArea, setSelectedArea] = useState<string>('all');
   const [selectedPersona, setSelectedPersona] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
-  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [creatingKey, setCreatingKey] = useState<string | null>(null);
+  const [jiraError, setJiraError] = useState<string | null>(null);
 
   // Filter issues
   const filteredIssues = issues.filter(issue => {
@@ -80,11 +85,16 @@ export const IssuesScreen: React.FC<IssuesScreenProps> = ({
     link.remove();
   };
 
-  const handleQuickCopyJira = (issue: DetectedIssue) => {
-    const text = `h2. [BUG][${issue.area}] ${issue.title}\n*Key:* ${issue.key}\n*Persona:* ${issue.persona}\n*Severity:* ${issue.severity.toUpperCase()}\n\n${issue.description}\n\n*Expected:* ${issue.expected}\n*Actual:* ${issue.actual}`;
-    navigator.clipboard.writeText(text);
-    setCopiedKey(issue.id);
-    setTimeout(() => setCopiedKey(null), 2000);
+  const handleCreateJiraIssue = (issue: DetectedIssue) => {
+    if (issue.jiraKey || creatingKey) return;
+    setCreatingKey(issue.id);
+    setJiraError(null);
+    postJSON<{ jiraKey: string; jiraUrl: string }>(`/api/jira/issues/${issue.id}`, {})
+      .then(({ jiraKey, jiraUrl }) => {
+        onIssueLinkedToJira(issue.id, jiraKey, jiraUrl);
+      })
+      .catch(err => setJiraError(`Failed to create JIRA issue for ${issue.key}: ${err.message}`))
+      .finally(() => setCreatingKey(null));
   };
 
   return (
@@ -126,6 +136,13 @@ export const IssuesScreen: React.FC<IssuesScreenProps> = ({
           )}
         </div>
       </div>
+
+      {jiraError && (
+        <div className="bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg px-4 py-2.5 flex items-center justify-between">
+          <span>{jiraError}</span>
+          <button onClick={() => setJiraError(null)} className="text-red-700 hover:underline ml-4 flex-shrink-0">Dismiss</button>
+        </div>
+      )}
 
       {/* Multi-tier Filter & Search Bar */}
       <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-3">
@@ -307,18 +324,37 @@ export const IssuesScreen: React.FC<IssuesScreenProps> = ({
                             <Terminal className="w-3.5 h-3.5" />
                           </button>
                         )}
-                        <button
-                          onClick={() => handleQuickCopyJira(issue)}
-                          title="Copy JIRA Format"
-                          className="p-1 rounded text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-colors"
-                        >
-                          {copiedKey === issue.id ? <Check className="w-3.5 h-3.5 text-emerald-700" /> : <Copy className="w-3.5 h-3.5" />}
-                        </button>
+                        {issue.jiraKey ? (
+                          <a
+                            href={issue.jiraUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            title={`View ${issue.jiraKey} in JIRA`}
+                            className="flex items-center space-x-1 px-2 py-1 rounded text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 transition-colors"
+                          >
+                            <ExternalLink className="w-3 h-3" />
+                            <span>{issue.jiraKey}</span>
+                          </a>
+                        ) : (
+                          <button
+                            onClick={() => handleCreateJiraIssue(issue)}
+                            disabled={creatingKey === issue.id}
+                            title="Create in JIRA"
+                            className="flex items-center space-x-1 px-2 py-1 rounded text-[11px] font-semibold text-slate-700 bg-slate-100 border border-slate-200 hover:bg-slate-200 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                          >
+                            {creatingKey === issue.id ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <Bug className="w-3 h-3" />
+                            )}
+                            <span>{creatingKey === issue.id ? 'Creating…' : 'Create in JIRA'}</span>
+                          </button>
+                        )}
                         <button
                           onClick={() => onOpenJiraModal(issue)}
                           className="text-xs text-slate-700 hover:underline"
                         >
-                          JIRA
+                          Preview
                         </button>
                       </div>
                     </td>
