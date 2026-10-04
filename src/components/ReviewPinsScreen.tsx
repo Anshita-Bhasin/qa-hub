@@ -166,35 +166,26 @@ export const ReviewPinsScreen: React.FC<ReviewPinsScreenProps> = ({ onSyncPinsTo
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
           <div className="lg:col-span-8 text-xs text-slate-700 space-y-2">
             <p>
-              Drag this draggable bookmarklet directly to your browser's Bookmarks bar, or copy the code:
+              Modern browsers block drag-and-drop for bookmarklets, so copy the code below and paste it
+              into a new bookmark instead:
             </p>
             <div className="flex flex-wrap items-center gap-3">
-              {/* Draggable Anchor */}
-              <a
-                href={bookmarkletCode}
-                onClick={(e) => e.preventDefault()}
-                title="Drag me to your Bookmarks bar!"
-                className="cursor-grab active:cursor-grabbing px-3.5 py-2 rounded-lg bg-[#FFD21E] hover:bg-[#FFC107] text-slate-900 text-xs font-semibold shadow-sm border border-slate-300 flex items-center space-x-2 select-none"
-              >
-                <MapPin className="w-3.5 h-3.5" />
-                <span>📍 QA Agent Pin Tool</span>
-              </a>
-
               <button
                 onClick={handleCopyBookmarklet}
-                className="flex items-center space-x-1.5 px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-medium transition-colors"
+                className="flex items-center space-x-1.5 px-3.5 py-2 rounded-lg bg-[#FFD21E] hover:bg-[#FFC107] text-slate-900 text-xs font-semibold shadow-sm border border-slate-300 transition-colors"
               >
                 {copiedBookmarklet ? <Check className="w-3.5 h-3.5 text-emerald-700" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>{copiedBookmarklet ? 'Copied Code!' : 'Copy Bookmarklet Code'}</span>
+                <span>{copiedBookmarklet ? 'Copied Code!' : '📍 Copy QA Agent Pin Tool Code'}</span>
               </button>
             </div>
           </div>
 
           <div className="lg:col-span-4 p-3 bg-slate-100 rounded-lg border border-slate-200 text-[11px] text-slate-500 space-y-1">
-            <div className="font-semibold text-slate-700">How to use on saucedemo.com:</div>
-            <div>1. Navigate to saucedemo.com in a new tab.</div>
-            <div>2. Click <strong>QA Agent Pin Tool</strong> in bookmarks.</div>
-            <div>3. Click any broken image or misaligned button to drop pins!</div>
+            <div className="font-semibold text-slate-700">How to install &amp; use:</div>
+            <div>1. Click <strong>Copy QA Agent Pin Tool Code</strong> above.</div>
+            <div>2. Create a new browser bookmark (e.g. Ctrl/Cmd+D), name it anything.</div>
+            <div>3. Paste the copied code into the bookmark's URL field and save.</div>
+            <div>4. On saucedemo.com, click that bookmark, then click any broken image or misaligned button to drop pins!</div>
           </div>
         </div>
       </div>
